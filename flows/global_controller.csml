@@ -1,0 +1,131 @@
+import {GetAirtableActivities} from global_endpoints
+import {GetNextActivity, GlobalCommands, GetNextQuestion, SetActivityDone, QuizSelection,SendHSM} from global_functions
+import {Dispatcher} from reducers
+
+start:
+  remember system_messages = {
+    "dont_match": ["Não entendi sua resposta 🤔"],
+    "is_correct": ["Você acertou! 😀"],
+    "is_wrong": ["Você errou 😔"]
+  }
+
+  remember global_airtable_key = "keyMXHOBOou5tEndh"
+
+  remember global_user_position = {}
+
+  remember hub_data_layer_user_id = Dispatcher("CREATE_USER", 
+    {
+      "session_id": _metadata.user_id
+    }, NULL
+  )
+
+  goto step b2b
+
+b2b:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+      "question": {
+        "prompt": "Boas-vindas! Para começar, por favor digite o código que você recebeu. \nAo continuar, você está aceitando nossos termos de uso http://bit.ly/termos-chatclass"
+      }, 
+      "metadata": _metadata,
+      "course_id": NULL,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  goto step select_course
+
+select_course:
+
+  hold
+
+  do select = QuizSelection(event, NULL, {"metadata": _metadata, "course_id": "NOT_SELECTED_YET", "airtable_key": global_airtable_key})
+
+  if (select.changeFlow) {
+    do step_name = select.goto.step
+    do flow_name = select.goto.flow
+    goto $step_name@$flow_name
+  }
+  else if (event.text == "#empiricus") {
+    remember airtable_name = "%23empiricus"
+    remember course_id = "empiricus"
+
+    goto step get_course
+  }
+  else if (event.text == "#bahia") {
+    remember airtable_name = "%23bahia"
+    remember course_id = "bahia"
+
+    goto step get_course
+  }
+  else if (event.text == "#stoodi") {
+    remember course_id = "stoodi"
+		remember stoodi = {}
+    do stoodi.datalayer_id = hub_data_layer_user_id
+
+    goto start@stoodi_onboarding
+  }
+  else if (event.text == "#stooditeste") {
+    remember course_id = "stoodi"
+		remember stoodi = {}
+    goto start@stoodi_menu
+  }
+  else {
+    say "Tente digitar o código novamente com # e sem espaços (ex: #colegio123). Se o erro persistir verifique o código com seu professor."
+
+    goto step select_course
+  }
+
+restart:
+  remember course_data = NULL
+
+  say Wait(1000)
+
+  goto step start
+
+
+// Handle activity start and return
+
+next_activity:
+  remember current_activity = GetNextActivity(course_data)
+
+  if(current_activity == []){
+    
+    say "**Você finalizou o curso**"
+    
+    goto step start
+  }
+  else {
+    goto step next_question
+  }
+
+next_question:
+  remember current_question = GetNextQuestion(current_activity.questions)
+
+  if(current_question == []){
+    do course_data = SetActivityDone(current_activity, course_data)
+    goto step next_activity
+  }
+  else {
+    do flow_name = current_question.goto.flow
+    do step_name = current_question.goto.step
+    goto $step_name@$flow_name
+  }
+
+//-----------------
+
+get_course:
+  remember airtableKey = "keyMXHOBOou5tEndh"
+  
+  remember course_data = GetAirtableActivities(airtable_name, airtableKey)
+
+  goto step next_activity
+
+empiricus:
+  remember airtable_name = "%23empiricus"
+  goto step get_course
+
+bahia:
+  remember airtable_name = "%23bahia"
+  goto step get_course

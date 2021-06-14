@@ -1,0 +1,52 @@
+import {Dispatcher} from reducers
+
+start:
+    say "**Your are in quiz**"
+
+    remember quiz_state = Dispatcher("GET_QUIZ_STATE", course)
+
+    goto step question_prompt
+
+question_prompt:
+
+    say Dispatcher("SHOW_QUESTION", quiz_state, NULL)
+
+    goto question_prompt
+
+question_response:
+
+    hold
+
+    remember result = Dispatcher("HANDLE_RESPONSE", quiz_state, event)
+
+    do step_name = result["step"]
+    
+    goto $step_name@activity_quiz2
+
+misunderstood:
+
+    goto step question_prompt
+
+correct:
+
+    goto step next_question
+
+wrong:
+
+    goto step next_attempt
+
+next_attempt:
+
+    goto step next_question
+
+next_question:
+
+    remember quiz_state = Dispatcher("GET_NEXT_STEP", quiz_state, NULL)
+
+    do step_name = quiz_state.goto.step
+    do flow_name = quiz_state.goto.flow
+
+    goto $step_name@$flow_name
+
+
+

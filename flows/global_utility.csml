@@ -1,0 +1,177 @@
+start:
+    say "**You are in global_utiliy**"
+
+    hold
+
+    goto end
+
+/*
+*
+*/
+fn RemoveString(original, toRemove):
+  do newString = original
+
+  foreach (item) in toRemove{
+    do temp = []
+    do list = newString.split(item)
+    foreach (str) in list{
+      if (str != item){
+        do temp.push(str)
+      }
+    }
+    do newString = temp.join(" ")
+  }
+
+  return newString
+
+
+/**
+* Group by array by a field name
+* @param {string} field - field commum to array elements to group by
+* @param {array} array - array of elements to be grouped
+* @return {object} - with each key as field and value an array of elements grouped by the commom key
+*/
+fn GroupBy(field, array):
+  do temp = {}
+
+  foreach (item) in array {
+    do itemField = item[field]
+    
+    if(temp[itemField]){
+      do temp[itemField].push(item)
+    } 
+    else {
+      do temp[itemField] = [item]
+    }
+  }
+
+  return temp
+
+
+/**
+* Transform object to array by serializing the object fields
+* @param {object}
+* @param {object<array>} extra_fields - object to add as field in each element in array
+* @param {string} values_field_name - string used as new key name for value of the object
+* @return {object<array>}
+*/
+fn ObjectToArray(object, extra_fields, values_field_name):
+  do array = []
+  do keys = object.keys()
+
+  foreach (key) in keys {
+    do value = object[key]
+    do item = {"id": key}
+    do item["{{values_field_name}}"] = value
+    if(extra_fields){
+      foreach (extraField) in extra_fields {
+        do extraFieldKey = extraField.keys()[0]
+        do extraFieldValue = extraField.values()[0]
+        do item[extraFieldKey] = extraFieldValue
+      }
+    }
+
+    //Transfer logic to other function
+    do item["item"] = item["{{values_field_name}}"][0].id
+
+    do array.push(item)
+  }
+
+  return array
+
+
+
+
+/**
+ * Find one object in array based on a method and key value
+ * array: object[]
+ * key: string
+ * method: "min"
+ * 
+ * return: object
+ */
+fn FindObjectArray(array, method, key):
+  if(array == []){
+    return array
+  }
+
+  do object_find = array[0]
+  if(method == "min"){
+    foreach (item, index) in array {
+      if(object_find[key] > item[key]){
+        do object_find = item
+      }
+    }
+  
+    return object_find
+  }
+
+
+/**
+ * Filter elements from array:
+ * array: object[]
+ * property: string[]
+ * operator: "=="
+ * condition: string | boolean - whatever you want to match
+ * 
+ * return: object[]
+ */
+fn FilterObjectArray(array, property, operator, condition):
+  do filtered = []
+
+  if(operator == "==") {
+    foreach (item) in array {
+      if(item[property].to_string() == condition.to_string()){
+        do filtered.push(item)
+      }
+    }
+
+    return filtered
+  }
+  else  {
+    return []
+  }
+
+
+/*
+* Return an array of elements based on key
+* @array: objects[]
+* @key: string
+*
+* return: any[] 
+*/
+  fn GetParameter(array, key, exception):
+    do temp = []
+
+    foreach (item) in array{
+      if(item[exception.key]){
+        if(item[exception.key] == exception.value){
+          continue
+        }
+        else if(item[key] != ""){
+          do temp.push(item[key])
+        }
+      } else {
+        continue
+      }
+    }
+
+    return temp
+
+fn RemoveDuplicates(array, field):
+  do temp = [array[0]]
+
+  foreach (item) in array{
+    do not_in_array = true
+    foreach (obj) in temp{
+      if(obj[field] == item[field]){
+        do not_in_array = false
+      }
+    }
+    if(not_in_array){
+      do temp.push(item)
+    }
+  }
+
+  return temp
+

@@ -1,0 +1,56 @@
+import {SetQuestionDone, RenderOptions, QuizSelection, GetNextQuestion, SetActivityDone, GetNextActivity} from global_functions
+import {PostStats} from global_endpoints
+import {Dispatcher} from reducers
+
+start:
+  say "**Your are in activity_instructional**"
+
+  goto step message
+
+next_question:
+  remember current_question = GetNextQuestion(current_activity.questions)
+
+  if(current_question == []){
+    do PostStats(airtableKey, current_activity, _metadata)
+    do course_data = SetActivityDone(current_activity, course_data)
+    remember current_activity = GetNextActivity(course_data)
+    if(current_activity == []){
+      
+      say "**Você finalizou o curso**"
+      
+      goto step start
+    }
+    else {
+      goto step next_question
+    }
+  }
+  else {
+    do step_name = current_question.goto.step
+    do flow_name = current_question.goto.flow
+    goto $step_name@$flow_name
+  }
+  
+message:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+      "question": current_question, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  if (current_question.media){
+    say current_question.media
+  }
+
+  say Wait(2000)
+
+  goto step end_prompt
+
+end_prompt:
+
+  do current_activity.questions = SetQuestionDone(current_question, current_activity.questions)
+
+  goto step next_question

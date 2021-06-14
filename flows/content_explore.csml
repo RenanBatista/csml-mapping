@@ -1,0 +1,56 @@
+import {GetCoursesModules, RenderMessage, GetActivitiesByUnit, OptionSelected, GlobalCommands} from global_functions
+
+start:
+  say "**You are in content_explore**"
+
+  remember course_modules = GetCoursesModules(course_data) 
+
+  goto step prompt_activities
+
+prompt_activities:
+
+  do render = RenderMessage("content_explore", course_modules, NULL)
+
+  say render.message 
+
+  hold
+
+  do select = MenuSelection(event.text, render.options)
+
+  if(select.changeFlow){
+    do stepName = select.goto.step
+    do flowName = select.goto.flow
+    if (select.goto.hsm){
+      remember hsm = select.goto.hsm
+    }
+    goto $stepName@$flowName
+  }
+
+  goto step answer_activities
+
+answer_activities:
+
+  goto step prompt_questions
+
+prompt_questions:
+
+  goto step end
+
+end:
+
+  goto next_activity@global_controller
+
+fn MenuSelection(userMessage, options):
+
+  do wide_command = GlobalCommands(userMessage)
+
+  if (wide_command){
+    return wide_command
+  } else {
+    foreach (option) in options {
+      if (userMessage.match_regex("(?i)({{option.name}})")){
+        return { "step": option.stepName, "flow": option.flowName }  
+      } 
+    }
+    return false
+  }

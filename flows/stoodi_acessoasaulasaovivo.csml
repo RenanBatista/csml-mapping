@@ -1,0 +1,357 @@
+import {Dispatcher} from reducers
+
+start:
+
+	do global_user_position = {"step": "start", "flow": "stoodi_acessoasaulasaovivo"}
+	goto step_0
+
+step_0:    
+
+	do global_user_position = {"step": "step_0", "flow": "stoodi_acessoasaulasaovivo"}
+        
+  //será que esse excelente não fica muito aleatório?
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "Excelente!"  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	say Wait(200)
+
+	goto step step_11
+
+step_11:
+
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "No Stoodi tem aula ao vivo toda semana para que você possa aproveitar e tirar suas dúvidas diretamente com nossos professores!"  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+
+	goto step step_12
+
+step_12:
+
+	do timeapi = HTTP("http://worldtimeapi.org/api/timezone/America/Sao_Paulo").get().send()
+
+	do stoodi.current_day = timeapi.day_of_week
+
+	say Wait(2000)
+
+	if ( stoodi.current_day == "6" || stoodi.current_day == "5" ) {
+		goto step step_13
+	}
+	else {
+		goto step step_14
+	}
+
+step_13:
+
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "As aulas acontecem de segunda à sexta, em horários variados. 🤓"  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+
+	say Wait(200)
+
+	goto step_1
+
+step_14:
+	do nome_da_aula = ["Física", "Gramática", "Matemática", "Quimica", "Biologia"]
+	do nome_prof = ["Prof. Doug", "Prof.ª Priscila", "Prof. Paulo", "Prof. Kleber", "Prof. Rafael"]
+	//Pegar com a Stoodi: Nome dos professores das aulas
+
+	do current_day = Time().format("%w")
+
+	say Dispatcher("SHOW_QUESTION", 
+		{
+		"question": {
+			"prompt":  "Hoje por exemplo, é dia de falar sobre *{{nome_da_aula[current_day]}}*. com *{{nome_prof[current_day]}}*. 🤓" 
+		}, 
+		"metadata": _metadata,
+		"course_id": course_id,
+		"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+	say Wait(2000)
+
+	//TODO: Where this var come from:
+	if (notifications_sent == "5") {
+		goto already_notified
+	} else {
+		goto step_1
+	}
+
+
+step_1:    
+
+	do global_user_position = {"step": "step_1", "flow": "stoodi_acessoasaulasaovivo"}
+
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "E eu tenho uma novidade pra você, imagina o que pode ser? 👀"  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+
+	goto step step_15
+
+step_15:
+        
+	hold
+
+	do var_event = Dispatcher("USER_RESPONSE", 
+		{
+			"course": "stoodi", 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+		}, event
+	)
+
+	if (var_event.step && var_event.flow){
+		do step_name = var_event.step
+		do flow_name = var_event.flow
+		goto $step_name@$flow_name
+	}
+
+	goto step step_16
+
+step_16:
+
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "Liberei uma semana de acesso grátis as nossas aulas ao vivo pra você que está me acompanhando aqui no WhatsApp. Legal, né? 🚀🚀🚀" 
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+
+	say Wait(200)
+
+	goto step step_17
+
+step_17:
+
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "Quer receber lembretes diários para não perder nenhuma delas?" 
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+
+	goto step step_18
+
+step_18:
+
+	hold
+
+	do var_event = Dispatcher("USER_RESPONSE", 
+			{
+			"course": "stoodi", 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+			}, event
+	)
+
+	if (var_event.step && var_event.flow) {
+			do step_name = var_event.step
+			do flow_name = var_event.flow
+			goto $step_name@$flow_name
+	}
+
+	do user_input = event.intent.name
+
+	if (user_input match "Utilities.Reject") {
+		goto step step_19
+	} 
+	else {
+		goto step step_21
+	}
+
+step_19:
+
+	say Dispatcher("SHOW_QUESTION", 
+		{
+				"question": {
+					"prompt":  "Certo, mas você só vai conseguir acessar as aulas ao vivo de forma gratuita ativando os lembretes aqui pelo WhatsApp 🔔"
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+	say Wait(200)
+
+	goto step step_20
+
+step_20:
+
+	say Dispatcher("SHOW_QUESTION", 
+		{
+			"question": {
+				"prompt":  "Então, se mudar de ideia, volte ao menu e escolha a opção *Aulas ao vivo*."
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+	say Wait(2000)
+
+	goto flow stoodi_menu
+
+
+step_21:
+
+	say Dispatcher("SHOW_QUESTION", 
+		{
+			"question": {
+				"prompt":  "👍 Isso aí!"
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+		"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+	say Wait(200)
+
+	goto step step_22
+
+step_22:
+
+	say Dispatcher("SHOW_QUESTION", 
+		{
+				"question": {
+					"prompt":  "Em breve você vai começar a receber por aqui os links de acesso às próximas aulas. \nÉ só acessar e participar! Espero que aproveite muito."
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+	say Wait(2000)
+
+	//salvar usuário na lista de subscribers para 
+	goto flow stoodi_menu
+
+already_notified:
+
+	do global_user_position = {"step": "already_notified", "flow": "stoodi_acessoasaulasaovivo"}
+
+	say Dispatcher("SHOW_QUESTION",{
+		"question": {
+			"prompt":  "Vi aqui que você já recebeu nosso brinde de aulas ao vivo, tenho certeza que foi um ótimo avanço para seus estudos 📈"
+		}
+	}, event)
+
+	say Wait(200)
+
+	goto step step_23
+
+step_23:
+
+	say Dispatcher("SHOW_QUESTION",{
+		"question": {
+			"prompt": "Quer saber como ter acesso a todas as aulas ao vivo do Stoodi?"  
+		}
+	}, event)
+
+	goto step step_24
+
+step_24:
+
+	hold
+
+	do var_event = Dispatcher("USER_RESPONSE", 
+        {
+		"course": "stoodi", 
+		"metadata": _metadata,
+		"course_id": course_id,
+		"airtable_key": global_airtable_key
+        }, event
+	)
+
+
+	if (var_event.step && var_event.flow){
+		do step_name = var_event.step
+		do flow_name = var_event.flow
+		goto $step_name@$flow_name
+	}
+
+	do user_input = event.intent.name
+
+	if (user_input match "Utilities.Reject") {
+		goto step step_25
+	}
+	else {
+		goto step step_26	
+	}
+
+step_25:
+
+      say Dispatcher("SHOW_QUESTION", 
+        {
+            "question": {
+              "prompt":  "Tudo bem!"  
+        }, 
+        }, NULL
+      )
+
+      goto flow stoodi_menu
+
+step_26:
+
+	say Dispatcher("SHOW_QUESTION",{
+		"question": {
+			"prompt": "Temos planos para todos os perfis de estudantes. 🤓🤓🤓"
+		}
+	}, event)
+
+	say Wait(200)
+
+	goto step step_27
+
+step_27:
+
+	say Dispatcher("SHOW_QUESTION",{
+		"question": {
+			"prompt": "https://www.stoodi.com.br \nDá só uma olhada"
+		}
+	}, event)
+
+	goto flow stoodi_menu
+    

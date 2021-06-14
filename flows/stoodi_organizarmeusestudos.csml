@@ -1,0 +1,560 @@
+import {Dispatcher} from reducers
+
+start:
+
+  do global_user_position = {"step": "start", "flow": "stoodi_organizarmeusestudos"}
+  say Dispatcher("SHOW_QUESTION", 
+    {
+      "question": {
+        "prompt":  "Quer saber como fazer o seu cronograma de estudos personalizado? 📅"  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+      
+  goto step step_1
+
+step_1:
+     
+  hold
+
+	do var_event = Dispatcher("USER_RESPONSE", 
+      {
+      "course": "stoodi", 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+      }, event
+  )
+
+
+  if (var_event.step && var_event.flow){
+      do step_name = var_event.step
+      do flow_name = var_event.flow
+      goto $step_name@$flow_name
+  }
+
+  do stoodi.user_input = event.intent.name
+  if (stoodi.user_input match "Utilities.Reject") {
+    goto step step_2
+  } 
+  else {
+    goto step step_4
+  }
+
+step_2:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+        "question": {
+          "prompt":  "Eu também posso te enviar amostras diárias de cronogramas pra você testar."  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  say Wait(200)
+
+  goto step step_3
+
+step_3:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+        "question": {
+          "prompt":  "Quer começar a receber este alerta de estudos organizados?"  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  //organizar
+  goto stoodiplansubscribe
+
+step_4:
+
+    say Dispatcher("SHOW_QUESTION", 
+      {
+          "question": {
+            "prompt":  "Então vamos lá"  
+        }, 
+        "metadata": _metadata,
+        "course_id": course_id,
+        "airtable_key": global_airtable_key
+      }, NULL
+    )
+
+    say Wait(200)
+
+  goto step step_5
+
+step_5:
+
+    say Dispatcher("SHOW_QUESTION", 
+      {
+          "question": {
+            "prompt":  "Queremos te ajudar a manter uma rotina de estudos."  
+        }, 
+        "metadata": _metadata,
+        "course_id": course_id,
+        "airtable_key": global_airtable_key
+      }, NULL
+    )
+
+    say Wait(200)
+
+    goto step step_6
+
+step_6:
+
+    say Dispatcher("SHOW_QUESTION", 
+      {
+          "question": {
+            "prompt":  "Priorizamos seus estudos de acordo com a sua disponibilidade de tempo, assim, mesmo se você tiver pouco tempo para estudar, nós garantimos que você vai estudar os conteúdos mais cobrados no ENEM primeiro. \n🏁🏁🏁🏁🏁"  
+        }, 
+        "metadata": _metadata,
+        "course_id": course_id,
+        "airtable_key": global_airtable_key
+      }, NULL
+    )
+
+    say Wait(3000)
+
+    goto step step_7
+
+step_7:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+        "question": {
+          "prompt":  "Legal né?"  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  goto step step_8
+
+step_8:
+
+  hold
+
+  do var_event = Dispatcher("USER_RESPONSE", 
+    {
+    "course": "stoodi", 
+    "metadata": _metadata,
+    "course_id": course_id,
+    "airtable_key": global_airtable_key
+    }, event
+  )
+  if (var_event.step && var_event.flow){
+      do step_name = var_event.step
+      do flow_name = var_event.flow
+      goto $step_name@$flow_name
+  }
+
+  goto stoodischedulesample
+
+stoodiplansubscribe:
+
+  do global_user_position = {"step": "stoodiplansubscribe", "flow": "stoodi_organizarmeusestudos"}
+
+  hold
+
+	do var_event = Dispatcher("USER_RESPONSE", 
+        {
+        "course": "stoodi", 
+        "metadata": _metadata,
+        "course_id": course_id,
+        "airtable_key": global_airtable_key
+        }, event
+    )
+    if (var_event.step && var_event.flow){
+        do step_name = var_event.step
+        do flow_name = var_event.flow
+        goto $step_name@$flow_name
+    }
+
+  do stoodi.user_input = event.intent.name
+
+  if (stoodi.user_input match "Utilities.Reject") {
+    goto step step_9
+  } 
+  else {
+
+    do scheduler_subscriber = true
+    do data_post = HTTP("https://sheetdb.io/api/v1/fzrqui04zg7g2?sheet=Cronograma").post({"data":[{ "Nome": "{{user_full_name}}", "Data da inscrição": "" }]}).send()
+   
+    goto step step_11
+  }
+
+step_9:
+
+  say Dispatcher("SHOW_QUESTION", 
+      {
+          "question": {
+            "prompt":  "Tudo bem"  
+        }, 
+        "metadata": _metadata,
+        "course_id": course_id,
+        "airtable_key": global_airtable_key
+      }, NULL
+    )
+
+   say Wait(200)
+
+   goto step step_10
+
+step_10:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+        "question": {
+          "prompt":  "Eu tenho muitos outros conteúdos por aqui para te apoiar na jornada rumo à aprovação."  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  goto flow stoodi_menu
+
+step_11:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+        "question": {
+          "prompt":  "✅ Tudo certo!"  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  say Wait(200)
+
+  goto step step_12
+
+step_12:
+
+  say Dispatcher("SHOW_QUESTION", 
+      {
+        "question": {
+          "prompt":  "Em breve você começará a receber cronogramas diários para estruturar seus estudos."  
+      }, 
+        "metadata": _metadata,
+        "course_id": course_id,
+        "airtable_key": global_airtable_key
+      }, NULL
+  )
+
+  say Wait(3000)
+
+  goto flow stoodi_menu
+   //INSCREVER USUÁRIO AOS PLANOS DE ESTUDO
+
+
+stoodischedulesample:
+
+  do global_user_position = {"step": "stoodischedulesample", "flow": "stoodi_organizarmeusestudos"}
+
+	say Dispatcher("SHOW_VIDEO", 
+		{
+			"url": "https://storage.googleapis.com/wapp11/media:7c5de40d91fa48619d8f10680ba8017c.mp4",
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+  say Wait(200)
+
+  goto step step_13
+
+step_13:
+
+	say Dispatcher("SHOW_QUESTION", 
+			{
+					"question": {
+						"prompt":  "Olha só como é fácil fazer o seu"  
+				}, 
+				"metadata": _metadata,
+				"course_id": course_id,
+				"airtable_key": global_airtable_key
+			}, NULL
+		)
+  say Wait(200)
+
+  goto step step_14 
+
+step_14:
+
+  say Dispatcher("SHOW_QUESTION", 
+      {
+          "question": {
+            "prompt":  "Quer ver como é um cronograma prontinho?"  
+        }, 
+        "metadata": _metadata,
+        "course_id": course_id,
+        "airtable_key": global_airtable_key
+      }, NULL
+  )
+
+  goto step step_15
+
+step_15:
+
+  hold
+
+	do var_event = Dispatcher("USER_RESPONSE", 
+        {
+        "course": "stoodi", 
+        "metadata": _metadata,
+        "course_id": course_id,
+        "airtable_key": global_airtable_key
+        }, event
+    )
+    if (var_event.step && var_event.flow){
+        do step_name = var_event.step
+        do flow_name = var_event.flow
+        goto $step_name@$flow_name
+    }
+
+  do stoodi.user_input = event.intent.name
+
+  if (stoodi.user_input match "Utilities.Reject") {
+    
+    goto step step_16
+  
+  } 
+  else {
+    goto step step_18
+  }
+
+step_16:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+        "question": {
+          "prompt":  "E que tal organizar seus estudos agora mesmo?"  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  goto step step_17
+
+step_17:
+
+  hold
+
+  do var_event = Dispatcher("USER_RESPONSE", 
+      {
+      "course": "stoodi", 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+      }, event
+  )
+  if (var_event.step && var_event.flow){
+      do step_name = var_event.step
+      do flow_name = var_event.flow
+      goto $step_name@$flow_name
+  }
+
+  do stoodi.user_input = event.to_lowercase()
+
+  goto stoodischedulestart
+
+step_18:
+
+  say Dispatcher("SHOW_VIDEO", 
+    {
+      "url": "https://storage.googleapis.com/wapp11/media:710bce87aab740879ac9e81584a1dcc7.mp4",
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  goto step step_19
+
+step_19:
+
+  say Wait(200)
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+        "question": {
+          "prompt":  "Muito mais prático estudar assim ✨"  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  goto step step_20
+
+step_20:
+  
+  say Wait(200)
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+        "question": {
+          "prompt":  "E aí, vamos organizar seus estudos agora mesmo?"  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  goto step step_21
+
+step_21:
+  
+  hold
+
+  do var_event = Dispatcher("USER_RESPONSE", 
+    {
+    "course": "stoodi", 
+    "metadata": _metadata,
+    "course_id": course_id,
+    "airtable_key": global_airtable_key
+    }, event
+  )
+  if (var_event.step && var_event.flow){
+      do step_name = var_event.step
+      do flow_name = var_event.flow
+      goto $step_name@$flow_name
+  }
+
+  do stoodi.user_input = event.intent.name
+
+  goto stoodischedulestart
+
+stoodischedulestart:
+
+  do global_user_position = {"step": "stoodischedulestart", "flow": "stoodi_organizarmeusestudos"}
+
+  if (stoodi.user_input match "Utilities.Reject"){
+    goto step step_22
+  } else {
+    goto step step_23
+  }
+
+step_22:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+        "question": {
+          "prompt":  "Eu tenho muitos outros conteúdos por aqui para te apoiar na jornada rumo à aprovação."  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  goto flow stoodi_menu
+
+step_23:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+        "question": {
+          "prompt":  "https://www.stoodi.com.br/plano-de-estudos/configurar/"  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  say Wait(200)
+
+  goto step step_24
+
+step_24:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+        "question": {
+          "prompt":  "Corre lá para configurar seu cronograma de estudos e já começar a estudar rumo à aprovação! 👍👍👍"  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  say Wait(3000)
+    //wtf? isso parece um chokepoint
+
+  goto step step_25
+
+step_25:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+        "question": {
+          "prompt":  "E depois me conta aqui o que achou do seu cronograma."  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  goto step step_26
+
+step_26:
+
+  hold
+
+  do var_event = Dispatcher("USER_RESPONSE", 
+      {
+      "course": "stoodi", 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+      }, event
+  )
+  if (var_event.step && var_event.flow){
+      do step_name = var_event.step
+      do flow_name = var_event.flow
+      goto $step_name@$flow_name
+  }
+
+  do stoodi.scheduleflow = "complete"
+
+  goto step step_27
+
+step_27:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+        "question": {
+          "prompt":  "Eu aposto que o seu tempo de estudo está sendo muito proveitoso com os conteúdos estruturados e organizados! 🔥🔥🔥"  
+      }, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  goto flow stoodi_cta

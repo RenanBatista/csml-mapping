@@ -1,0 +1,374 @@
+import {Dispatcher} from reducers
+
+start:    
+
+	do global_user_position = {"step": "start", "flow": "stoodi_temasderedacao"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "Você provavelmente já sabe que a redação é uma das matérias mais importantes do Enem. ✍️"  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+	say Wait(200)
+
+	goto step step_11
+
+step_11:
+
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "Isso porque é onde você tem mais chances de tirar 1000!"  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+
+	say Wait(200)
+
+	goto step step_12
+
+step_12:
+
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "Como vc tem se preparado para a redação?"  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+	
+	goto step step_13
+
+step_13:        
+
+	hold
+
+	do var_event = Dispatcher("USER_RESPONSE", 
+		{
+		"course": "stoodi", 
+		"metadata": _metadata,
+		"course_id": course_id,
+		"airtable_key": global_airtable_key
+		}, event
+	)
+	if (var_event.step && var_event.flow){
+		do step_name = var_event.step
+		do flow_name = var_event.flow
+		goto $step_name@$flow_name
+	}
+
+	goto step step_1
+
+step_1:    
+
+	do global_user_position = {"step": "step_1", "flow": "stoodi_temasderedacao"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "Tirar uma boa nota na redação pode alavancar a sua nota geral."  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+
+	say Wait(200)
+
+	goto step step_14
+
+step_14:
+
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "Por isso, aqui na Stoodi nós analisamos o seu desempenho em cada uma das cinco competências avaliadas. 😃"  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+
+	say Wait(2000)
+	
+	goto step step_15
+
+step_15:
+
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "Eu tenho temas atualizados todos os dias, posso te enviar pra você praticar e ficar nota 1000 na redação!  📝"  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+
+	say Wait(200)
+	
+	goto step step_16
+
+step_16:
+
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "Gostaria de receber os temas diariamente?"  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+
+	goto step step_17
+
+step_17:
+
+	hold
+
+	do var_event = Dispatcher("USER_RESPONSE", 
+		{
+		"course": "stoodi", 
+		"metadata": _metadata,
+		"course_id": course_id,
+		"airtable_key": global_airtable_key
+		}, event
+	)
+	if (var_event.step && var_event.flow){
+		do step_name = var_event.step
+		do flow_name = var_event.flow
+		goto $step_name@$flow_name
+	}
+			
+	if (event.intent.name match "Utilities.Reject"){
+		goto step step_18
+	}
+	else {
+		goto step step_19
+	}
+
+step_18:
+	say Dispatcher("SHOW_QUESTION", 
+		{
+				"question": {
+					"prompt":  "Tudo bem! \nSe mudar de ideia, é só acessar a opção *“Temas de redação”* no Menu.  "  
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+	goto flow stoodi_menu
+
+
+step_19:
+	say Dispatcher("SHOW_QUESTION", 
+		{
+				"question": {
+					"prompt":  "✅ Beleza!\nA prática leva à perfeição e também mais perto da aprovação!  Você está no caminho certo."  
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+	say Wait(200)
+
+	goto step step_20
+
+step_20:
+
+	do tema_completo = OneOf(["A importância da representatividade negra para se combater o racismo no esporte", "Economia do cuidado e desigualdade de gênero na divisão do trabalho doméstico", "Efeitos do imposto sobre livros na sociedade brasileira", "Consequências da erotização infantil na sociedade brasileira", "A música como demonstração de desigualdade socioeconômica"])
+	say Dispatcher("SHOW_QUESTION", 
+					{
+							"question": {
+								"prompt":  "O seu primeiro tema de redação para praticar é: \n📝 *{{tema_completo}}.*"  
+						}, 
+						"metadata": _metadata,
+						"course_id": course_id,
+						"airtable_key": global_airtable_key
+					}, NULL
+				)
+	say Wait(2000)
+
+	goto step step_21
+
+step_21:
+
+	say Dispatcher("SHOW_QUESTION", 
+		{
+				"question": {
+					"prompt":  "Me diz, qual o melhor horário pra te enviar o tema da redação do dia? \nEscolha um horário abaixo ou digite a hora escolhida: \n*1.* De manhã \n*2.* De tarde \n*3.* De noite"  
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+	goto step step_22
+
+step_22:
+	
+	hold
+
+	do stoodi.user_input = event
+
+	do var_event = Dispatcher("USER_RESPONSE", 
+			{
+			"course": "stoodi", 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+			}, event
+	)
+	if (var_event.step && var_event.flow){
+			do step_name = var_event.step
+			do flow_name = var_event.flow
+			goto $step_name@$flow_name
+	}
+
+	goto scheduletime
+
+scheduletime:
+
+	do global_user_position = {"step": "scheduletime", "flow": "stoodi_temasderedacao"}
+
+	//TODO: This condition can lead to nowhere
+	if (event.text.contains("manhã") || event.text.contains("manha") || event.text.contains("Manhã") || event.text.contains("Manha")) {
+		do stoodi.redacao_time = "9"
+	} else if (event.text.contains("tarde") || event.text.contains("tard") || event.text.contains("Tarde") || event.text.contains("Tard")) {
+		do stoodi.redacao_time = "12"
+	} else if (event.text.contains("noite") || event.text.contains("noit") || event.text.contains("Noite") || event.text.contains("Noit")) {
+		do stoodi.redacao_time = "18"
+	} else if (event.text.contains("1") || event.text.contains("2") || event.text.contains("3") || event.text.contains("4") || event.text.contains("5") || event.text.contains("6") || event.text.contains("7") || event.text.contains("8") || event.text.contains("9") || event.text.contains("10") || event.text.contains("11") || event.text.contains("12") || event.text.contains("13") || event.text.contains("14") || event.text.contains("15") || event.text.contains("16") || event.text.contains("17") || event.text.contains("18") || event.text.contains("19") || event.text.contains("20") || event.text.contains("21") || event.text.contains("22") || event.text.contains("23") || event.text.contains("00") || event.text.contains("0")) {
+		do stoodi.redacao_time = event.text
+	} else {
+		goto step step_23
+	}
+
+step_23:
+	say Dispatcher("SHOW_QUESTION", 
+		{
+				"question": {
+					"prompt":  "Ops, não peguei o horário que você escolheu. Me fala nesse formato: \n*Exemplo:* 9h"  
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+	goto step step_24
+
+step_24:
+
+	do stoodi.redacao_time = stoodi.user_input
+	
+	say Dispatcher("SHOW_QUESTION", 
+		{
+				"question": {
+					"prompt":  "Tudo bem! \nSe mudar de ideia, é só acessar a opção *“Temas de redação”* no Menu."  
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+	goto step step_25
+
+step_25:
+	
+	hold
+
+	do stoodi.user_input = event
+
+	do var_event = Dispatcher("USER_RESPONSE", 
+			{
+			"course": "stoodi", 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+			}, event
+	)
+	if (var_event.step && var_event.flow){
+			do step_name = var_event.step
+			do flow_name = var_event.flow
+			goto $step_name@$flow_name
+	}
+
+	goto scheduletime2
+
+
+scheduletime2:
+
+	do global_user_position = {"step": "scheduletime2", "flow": "stoodi_temasderedacao"}
+
+	if (event.text == "1" || event.text.contains("manhã") || event.text.contains("manha") || event.text.contains("Manhã") || event.text.contains("Manha")) {
+		do stoodi.redacao_time = "9"
+	} else if (event.text == "2" || event.text.contains("tarde") || event.text.contains("tard") || event.text.contains("Tarde") || event.text.contains("Tard")) {
+		do stoodi.redacao_time = "12"
+	} else if (event.text == "3" || event.text.contains("noite") || event.text.contains("noit") || event.text.contains("Noite") || event.text.contains("Noit")) {
+		do stoodi.redacao_time = "18"
+	} else if ( event.text.contains("4") || event.text.contains("5") || event.text.contains("6") || event.text.contains("7") || event.text.contains("8") || event.text.contains("9") || event.text.contains("10") || event.text.contains("11") || event.text.contains("12") || event.text.contains("13") || event.text.contains("14") || event.text.contains("15") || event.text.contains("16") || event.text.contains("17") || event.text.contains("18") || event.text.contains("19") || event.text.contains("20") || event.text.contains("21") || event.text.contains("22") || event.text.contains("23") || event.text.contains("00") || event.text.contains("0")) {
+		do stoodi.redacao_time = event.text
+	} else {
+		do postdm = HTTP("https://hooks.slack.com/services/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").post({"username": "ChatForm","text": "*:fuelpump:{{user_full_name}}* || {{user_phone}}: \n:speaking_head_in_silhouette: _{{event.text}}_"}).send()
+		do stoodi.redacao_time = stoodi.user_input
+		goto step step_26
+	}
+ 
+step_26:
+	say Dispatcher("SHOW_QUESTION", 
+		{
+				"question": {
+					"prompt":  "Poxa, eu realmente não entrendi qual o melhor horário para te enviar o tema da redação."  
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+	say Wait(200)
+
+	goto step step_27
+
+step_27: 
+	say Dispatcher("SHOW_QUESTION", 
+		{
+				"question": {
+					"prompt":  "Mas tudo bem, vou agendar aqui para te enviar às 12h, assim você ainda tem a tarde toda pra poder praticar sua redação. 🕛"  
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+	do stoodi.redacao_time_placeholder = "12h"
+
+	goto flow stoodi_cta
+
+
+
+

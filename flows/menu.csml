@@ -1,0 +1,27 @@
+import { GlobalCommands , SendHSM} from global_functions
+
+start:
+
+  say "{{username}}, o que vamos fazer? 
+    \n📝 **Ir** para o curso
+    \n🙋‍♀️ **Explorar** conteudo do curso 
+    \nEscolha a opção digitando a palavra destacada."
+  hold
+
+  do atomic = GlobalCommands(event.text)
+
+  if (atomic){
+    do stepname = atomic.step
+    do flowname = atomic.flow
+    goto $stepname@$flowname
+  } 
+  else if (event.text.match_regex("\s*(?i)(ir)\s*")) {
+    goto flow activity_aispeaking
+  }
+  else if (event.text.match_regex("\s*(?i)(explorar)\s*")) {
+    goto flow content_navigation
+  }
+  else {
+    say "🤔Hmm... Eu não entendi"
+    goto flow menu
+  }

@@ -1,0 +1,120 @@
+import {SetQuestionDone, RenderOptions, QuizSelection, GetNextQuestion, GetNextActivity, SetActivityDone} from global_functions
+import {PostStats , PostMisunderstood} from global_endpoints
+import {Dispatcher} from reducers
+
+start:
+    say "**Your are in quiz**"
+
+    goto step question
+
+next_question:
+  remember current_question = GetNextQuestion(current_activity.questions)
+
+  if(current_question == []){
+    do PostStats(airtableKey, current_activity, _metadata)
+    do course_data = SetActivityDone(current_activity, course_data)
+    remember current_activity = GetNextActivity(course_data)
+    if(current_activity == []){
+      
+      say "**Você finalizou o curso**"
+      
+      goto start@global_controller
+    }
+    else {
+      goto step next_question
+    }
+  }
+  else {
+    do step_name = current_question.goto.step
+    do flow_name = current_question.goto.flow
+    goto $step_name@$flow_name
+  }
+
+question:
+
+  say Dispatcher("SHOW_QUESTION", 
+    {
+      "question": current_question, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  if (current_question.media){
+    say current_question.media
+  }
+  if(current_question.options){
+    goto step answer
+  }
+  else {
+    goto step end_question
+  }
+
+answer:
+
+  do render = Dispatcher("SHOW_OPTIONS", 
+    {
+      "question": current_question, 
+      "metadata": _metadata,
+      "course_id": course_id,
+      "airtable_key": global_airtable_key
+    }, NULL
+  )
+
+  say render.options
+
+  hold
+
+  do select = Dispatcher("QUIZ_RESPONSE",
+    {
+      "answer": render.answer,
+      "payload": {"metadata": _metadata, "course_id": course_id, "airtable_key": global_airtable_key}
+    }, event
+  )
+
+  //do select = QuizSelection(event, render.answer, {"metadata": _metadata, "course_id": course_id, "airtable_key": global_airtable_key})
+
+  debug select
+
+  if(select.step && select.flow){
+    do step_name = select.step
+    do flow_name = select.flow
+    if (select.hsm){
+      remember hsm = select.goto.hsm
+    }
+    goto $step_name@$flow_name
+  }
+  else if (select.dontMatch){
+    say OneOf(system_messages.dont_match)
+    do PostMisunderstood(airtableKey, current_activity, event, _metadata)
+    goto step start
+  }
+  else if (select.isCorrect){
+    say OneOf(system_messages.is_correct)
+    do current_question["outcome"] = "POSITIVE"
+    do current_question["answer"] = event.text
+
+    goto step correct
+  }
+
+  goto step wrong
+
+correct:
+  goto step end_question
+
+wrong:
+  do current_question["attemps"] = current_question["attemps"] + 1
+
+  if(current_question["attemps"] == current_question["max_attemps"]){
+    goto step end_question
+  }
+  else {
+    goto step question
+  }
+
+end_question:
+
+  do current_activity.questions = SetQuestionDone(current_question, current_activity.questions)
+
+  goto step next_question

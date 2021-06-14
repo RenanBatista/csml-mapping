@@ -1,0 +1,25 @@
+import {RenderHSM} from global_functions
+
+start:
+    say "**You are in hsm flow**"
+
+    goto step prompt
+
+prompt:
+
+    say RenderHSM(hsm)
+
+    goto step answer
+
+answer:
+
+    hold
+
+    say event.text
+
+    goto step end_hsm
+
+end_hsm:
+
+    goto next_question@global_controller
+

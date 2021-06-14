@@ -1,0 +1,44 @@
+import {GlobalCommands, OptionSelected as select} from global_functions
+
+start:
+// could get the list from API .  list = array of lines + metainfo like ( nextcommand, previouscommand.. etc)
+// list = fn.getlist(listname) or local list
+// do cmdlist = [{labelstring, commandname, commandparams}, {line2} , {line3} ]
+// foreach line in list render number++ +". " + line.labelstring
+
+  say 
+    "De qual informação você precisa?
+    \n**1**⁠) xxxxxxxxxxx
+    \n**2⁠**) xxxxxxxxxxx
+    \n**C⁠**) xxxxxxxxxxx
+    \n**D⁠**) xxxxxxxxxxx
+    \n**E⁠**) xxxxxxxxxxx?
+    \n**F**⁠) xxxxxxxxxxx
+    \n**G⁠**) xxxxxxxxxxx
+    Digite a letra da opção desejada, ou **cancelar** para sair.
+    "
+  hold
+  // listoptionparser(list) return NULL if invalid or return validIndex
+  // action = cmdlist[numbertypedbyuser-1]
+  // goto actio.flow.step
+  // helper could also turn letter choices into listindex
+  // command like "more" "next" --> 
+
+  do atomic = GlobalCommands(event.text)
+
+  if (atomic){
+    do stepname = atomic.step
+    do flowname = atomic.flow
+    goto $stepname@$flowname
+  } 
+  else if (event.text.match_regex("\s*(?i)(cancelar)\s*")) {
+    goto flow menu
+  }
+  else if (event.text.match_regex("[a|A]")) {
+    say "Answear {{event.text}} not implemented.. "
+    goto flow help
+  }
+  else {
+    say "🤔Hmm... Eu não entendi"
+    goto flow help
+  }

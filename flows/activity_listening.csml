@@ -1,0 +1,6 @@
+start:
+    say "You are in listening"
+
+    hold
+
+    goto step start

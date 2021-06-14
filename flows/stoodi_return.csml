@@ -1,0 +1,132 @@
+import {Dispatcher} from reducers
+
+start:
+
+	do global_user_position = {"step": "start", "flow": "stoodi_return"}
+	//condition if we got user data
+	if (user_name == null) {
+		goto step step_1
+	} else if (user_email == null) {
+		goto step step_3	
+	} else if (user_cep == null) {
+		goto step step_5
+	} else {
+		goto step step_7
+	}
+
+step_1:
+	say Dispatcher("SHOW_QUESTION", 
+		{
+			"question": {
+				"prompt":  "Que bom te ver por aqui outra vez! ✨"  
+		}, 
+		"metadata": _metadata,
+		"course_id": course_id,
+		"airtable_key": global_airtable_key
+		}, NULL
+	)
+
+	say Wait(200)
+
+	goto step step_2
+
+step_2:
+
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "Vou precisar completar alguns dados antes de continuar os estudos."  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+
+
+	say Wait(200)
+
+	goto getemail@stoodi_onboarding
+
+step_3:
+
+	say Dispatcher("SHOW_QUESTION", 
+			{
+				"question": {
+					"prompt":  "Que bom te ver por aqui outra vez! ✨"  
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+			}, NULL
+		)
+
+	say Wait(200)
+
+	goto step step_4
+
+step_4:
+
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  "Vou precisar completar alguns dados antes de continuar os estudos."  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+
+	say Wait(200)
+	
+	goto getemail@stoodi_onboarding
+
+step_5:
+
+	say Dispatcher("SHOW_QUESTION", 
+			{
+				"question": {
+					"prompt":  "Que bom te ver por aqui outra vez! ✨"  
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+			}, NULL
+		)
+
+	say Wait(200)
+
+	goto step step_6
+
+step_6:
+
+	say Dispatcher("SHOW_QUESTION", 
+			{
+				"question": {
+					"prompt":  "Vou precisar completar alguns dados antes de continuar os estudos."  
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+			}, NULL
+		)
+
+	say Wait(200)
+
+	goto getcep0@stoodi_onboarding
+step_7:
+
+	say Dispatcher("SHOW_QUESTION", 
+			{
+				"question": {
+					"prompt":  "Que bom te ver por aqui outra vez! ✨"  
+			}, 
+			"metadata": _metadata,
+			"course_id": course_id,
+			"airtable_key": global_airtable_key
+			}, NULL
+		)
+		
+	goto start@stoodi_menu
+

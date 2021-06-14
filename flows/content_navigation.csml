@@ -1,0 +1,152 @@
+import {OptionBuilder, GlobalCommands} from global_functions
+import {GetAirtableActivities} from global_endpoints
+import {Dispatcher, ErrorReducer} from reducers
+
+start:
+  say "**You are in content_navigation**"
+
+  say OptionBuilder({}, {"activity_id": "123123"})
+
+  remember airtableKey = "keyMXHOBOou5tEndh"
+  
+  if(course_data == NULL){
+    remember course_data = GetAirtableActivities("%23empiricus", airtableKey)
+  }
+  if (course_data == NULL){
+    say "Você tem que escolher um curso antes!"
+
+    goto start@global_controller
+  }
+
+  remember content_navigation = {
+    "flow_name": "content_navigation",
+    "course": course_data,
+    "module_option": "",
+    "unit_option": "",
+    "activity_option": "",
+    "message": "",
+    "options": []
+  }
+
+  goto step prompt_modules
+
+prompt_modules:
+
+  do content_navigation = Dispatcher("SHOW_MODULES", content_navigation, NULL)
+
+  say content_navigation.message
+
+  goto step response_modules
+
+response_modules:
+
+  hold
+
+  do content_navigation = Dispatcher("HANDLE_MODULE_RESPONSE", content_navigation, event)
+
+  if ( content_navigation.module_option.change_flow ) {
+    do step_name = content_navigation.goto.step
+    do flow_name = content_navigation.goto.flow
+    if (content_navigation.goto.hsm){
+      remember hsm = content_navigation.goto.hsm
+    }
+    goto $step_name@$flow_name
+  }
+  else if (content_navigation.module_option.dont_match){
+    say OneOf(system_messages.dont_match)
+
+    goto step prompt_modules
+  }
+
+  goto step prompt_units
+
+prompt_units:
+
+  do content_navigation = Dispatcher("SHOW_UNITS", content_navigation, NULL)
+
+  say content_navigation.message
+
+  goto step response_units
+
+response_units:
+
+  hold
+
+  do content_navigation = Dispatcher("HANDLE_UNIT_RESPONSE", content_navigation, event)
+
+  if ( content_navigation.unit_option.change_flow ) {
+    do step_name = content_navigation.goto.step
+    do flow_name = content_navigation.goto.flow
+    if (content_navigation.goto.hsm){
+      remember hsm = content_navigation.goto.hsm
+    }
+    goto $step_name@$flow_name
+  }
+  else if (content_navigation.unit_option.dont_match){
+    say OneOf(system_messages.dont_match)
+
+    goto step prompt_units
+  }
+  else if (content_navigation.goback){
+    goto step prompt_modules
+  }
+
+  goto step prompt_activity
+
+prompt_activity:
+
+  do content_navigation = Dispatcher("SHOW_ACTIVITIES", content_navigation, event)
+
+  say content_navigation.message
+
+  goto step select_activity
+
+select_activity:
+
+  hold
+
+  do content_navigation = Dispatcher("HANDLE_ACTIVITY_RESPONSE", content_navigation, event)
+
+  if ( content_navigation.activity_option.change_flow ) {
+    do step_name = content_navigation.goto.step
+    do flow_name = content_navigation.goto.flow
+    if (content_navigation.goto.hsm){
+      remember hsm = content_navigation.goto.hsm
+    }
+    goto $step_name@$flow_name
+  }
+  else if (content_navigation.activity_option.dont_match){
+    say OneOf(system_messages.dont_match)
+
+    goto step prompt_activity
+  }
+  else if (content_navigation.activity_option) {
+    remember current_activity = Dispatcher("SELECT_ACTIVITY_BY_OPTION", content_navigation, NULL)
+    
+    do step_name = current_activity.goto.step
+    do flow_name = current_activity.goto.flow
+
+    goto next_question@global_controller
+  }
+  else if (content_navigation.goback){
+    goto step prompt_modules
+  }
+
+  say ErrorReducer("content_navigation", "NOT FOUND")
+
+  goto step start
+
+fn MenuSelection(userMessage, options):
+
+  do wide_command = GlobalCommands(userMessage)
+
+  if (wide_command){
+    return wide_command
+  } else {
+    foreach (option) in options {
+      if (userMessage.match_regex("(?i)({{option.name}})")){
+        return { "step": option.step_name, "flow": option.flow_name }  
+      } 
+    }
+    return false
+  }

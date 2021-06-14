@@ -1,0 +1,73 @@
+import {set_question_done, render_options, quiz_selection} from global_functions
+import {post_stats} from global_endpoints
+
+start:
+    say "**Your are in dialog**"
+
+    goto step dialog_question
+
+
+dialog_question:
+
+  say currentQuestion.prompt
+
+  if (currentQuestion.media){
+    say currentQuestion.media
+  }
+  
+  goto step answear
+
+answear:
+
+  do render = render_options(currentQuestion)
+
+  say render.options
+
+  hold
+
+  do select = quiz_selection(event.text, render.answear)
+
+  do payload = {
+      "activity_id": currentActivity.activity_id,
+      "question_id": currentQuestion.id,
+      "answear": event.text,
+      "metadata": _metadata
+    } 
+
+  if(select.changeFlow){
+    do stepName = select.goto.step
+    do flowName = select.goto.flow
+    goto $stepName@$flowName
+  }
+  else if (select.dontMatch){
+    say "Não entendi sua resposta 🤔"
+    do payload["outcome"] = "NOTUNDERSTOOD"
+    do post_stats(airtableKey, payload)
+    goto step start
+  }
+  else if(select.isCorrect){
+    say "Você acertou! 😀"
+    do payload["outcome"] = "POSITIVE"
+    do post_stats(airtableKey, payload)
+  }
+  else {
+    say "Você errou 😔"
+    do payload["outcome"] = "NEGATIVE"
+    do post_stats(airtableKey, payload)
+  }
+
+  goto step conclusion
+
+conclusion:
+
+  say "You finished a quiz_question, lets go to next"
+
+  say Wait(1500)
+
+  goto step end_dialog
+
+end_dialog:
+
+  do currentActivity.values = set_question_done(currentQuestion, currentActivity.values)
+
+  goto next_question@global_controller

@@ -1,0 +1,6 @@
+start:
+    say "You are in pickapick"
+
+    hold
+
+    goto step start

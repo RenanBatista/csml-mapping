@@ -1,0 +1,258 @@
+import {Dispatcher} from reducers
+
+//TODO: Remove hold from message step
+//TODO: Ask Pedro about this flow, if it is not beeing used
+start:
+
+	do global_user_position = {"step": "start", "flow": "stoodi_conhecermais"}
+
+	say "Welcome to flow Quero conhecer mais sobre os professores e matérias"
+
+	goto step step_0
+
+step_0:    
+
+	do global_user_position = {"step": "step_0", "flow": "stoodi_conhecermais"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  " [mensagem]COLETAR QUAL A MATÉRIA QUE O ALUNO MAIS GOSTA "  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	hold
+
+	goto step step_1
+
+step_1:    
+
+	do global_user_position = {"step": "step_1", "flow": "stoodi_conhecermais"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  " [vídeo]APRESENTAR VÍDEO RÁPIDO (15s) DO PROFESSOR DA MATÉRIA QUE ALUNO MAIS GOSTA  "  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	hold
+
+	goto step step_2
+
+step_2:    
+
+do global_user_position = {"step": "step_2", "flow": "stoodi_conhecermais"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  " [vídeo]APRESENTAR VÍDEOAULA MELHOR AVALIADA DA MATÉRIA QUE O ALUNO MAIS GOSTA "  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	hold
+
+	goto step step_3
+
+step_3:    
+
+do global_user_position = {"step": "step_3", "flow": "stoodi_conhecermais"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  " [mensagem]COLETAR QUAL A MATÉRIA QUE O ALUNO MENOS GOSTA "  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	hold
+
+	goto step step_4
+
+step_4:    
+
+do global_user_position = {"step": "step_4", "flow": "stoodi_conhecermais"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  " [vídeo]APRESENTAR VÍDEO RÁPIDO (15s) DO PROFESSOR DA MATÉRIA QUE ALUNO MENOS GOSTA  "  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	hold
+
+	goto step step_5
+
+step_5:    
+
+do global_user_position = {"step": "step_5", "flow": "stoodi_conhecermais"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  " [vídeo]APRESENTAR VÍDEOAULA MELHOR AVALIADA DA MATÉRIA QUE O ALUNO MENOS GOSTA "  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	hold
+
+	goto step step_6
+
+step_6:    
+
+do global_user_position = {"step": "step_6", "flow": "stoodi_conhecermais"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  " CTA PARA CONVERSÃO "  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	hold
+
+	goto step step_7
+
+step_7:    
+
+do global_user_position = {"step": "step_7", "flow": "stoodi_conhecermais"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  " Quer conhecer outras matérias? "  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	hold
+
+	goto step step_8
+
+step_8:    
+
+do global_user_position = {"step": "step_8", "flow": "stoodi_conhecermais"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  " Mensagem para direcionar para o Menu principal "  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	hold
+
+	goto step step_9
+
+step_9:    
+
+do global_user_position = {"step": "step_9", "flow": "stoodi_conhecermais"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  " Perguntar para o aluno qual outra matéria ele gostaria de conhecer "  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	hold
+
+	goto step step_10
+
+step_10:    
+
+do global_user_position = {"step": "step_10", "flow": "stoodi_conhecermais"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  " [vídeo]APRESENTAR VÍDEO RÁPIDO (15s) DO PROFESSOR DA MATÉRIA QUE ALUNO ESCOLHEU "  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	hold
+
+	goto step step_11
+
+step_11:    
+
+do global_user_position = {"step": "step_11", "flow": "stoodi_conhecermais"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  " [vídeo]APRESENTAR VÍDEOAULA MELHOR AVALIADA DA MATÉRIA QUE O ALUNO ESCOLHEU "  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	hold
+
+	goto step step_12
+
+step_12:    
+
+do global_user_position = {"step": "step_12", "flow": "stoodi_conhecermais"}
+        
+	say Dispatcher("SHOW_QUESTION", 
+        	{
+          		"question": {
+           			"prompt":  " CTA PARA CONVERSÃO "  
+          	}, 
+          	"metadata": _metadata,
+          	"course_id": course_id,
+          	"airtable_key": global_airtable_key
+        	}, NULL
+        )
+        
+	hold
+
+	goto step end

@@ -1,0 +1,320 @@
+import {GlobalCommands, OptionSelected as select} from global_functions
+import {GetActivity, SpeakingProcess} from global_endpoints
+
+start:
+
+  do apiResponse = GetActivity()
+  if (apiResponse.route){
+
+    remember current_activity = {
+      "id": apiResponse.current_activity.id,
+      "questionsToDo": apiResponse.current_activity.questions,
+      "questionsDone": [],
+      "current_question": {
+        "messages": [],
+        "requiredExpressions": [],
+        "suggestedExpressions": [],
+        "examples": [],
+        "attempts": 1,
+        "attemptsLimit": 3,
+      },
+      "responseAvaliation": {
+        "score": "",
+        "understoodWords": [],
+        "missingWords": [],
+      },
+    }
+
+    do step_name = apiResponse.route.step_name
+    do flow_name = apiResponse.route.flow_name
+    
+    goto $step_name@$flow_name
+  } 
+  else {
+    
+    say "Something is wrong..."
+    //if we get here make a call to slack
+    goto flow menu
+
+  }
+
+question_start:
+
+  if (current_activity.questionsToDo.length() > 0) {
+    do question = current_activity.questionsToDo.remove_at(0)
+    do current_activity.current_question = question
+    goto step question_statement
+  }
+  else {
+    goto step activity_conclusion
+  }
+
+question_statement:
+
+  do options = [
+    {"name": "cancel","step_name":"start","flow_name":"menu"},
+  ]
+
+  do statement = current_activity.current_question.messages.join("")
+  do useExamples = current_activity.current_question.requiredExpressions.join(" ")
+
+  if(current_activity.current_question.suggestedExpressions){
+    do suggestion = current_activity.current_question.suggestedExpressions.join(" ") 
+    say "Please answer the question with an AUDIO recording, or type **cancel** to exit this activity.
+        \n
+        \n{{statement}} 
+        \n
+        \n🔸Use: {{useExamples}}
+        \n💡Suggestions: {{suggestion}}"
+
+    hold
+  } else {
+    say "Please answer the question with an AUDIO recording, or type **cancel** to exit this activity.
+        \n
+        \n{{statement}} 
+        \n
+        \n🔸Use: {{useExamples}}"
+    hold
+  }
+
+  do selection = select(event, options)
+
+  if (selection){
+    do stepname = selection.step
+    do flowname = selection.flow
+    goto $stepname@$flowname
+  } 
+  else if (event.get_type() == "text"){
+    do current_activity.responseAvaliation = SpeakingProcess(event)
+    
+    say "I am listening to your recording now. Just a moment."
+    
+    goto step question_response
+  } 
+  else {
+
+    say "🤔 Hmm… I didn’t get that."
+
+    say Wait(1000)
+
+    goto step question_statement
+  }
+
+question_response:
+
+  do sampleAnswear = current_activity.current_question.examples.join("\n")
+  do heard = current_activity.responseAvaliation.understoodWords.join(" ")
+  do score = current_activity.responseAvaliation.score
+
+  say Wait(1000)
+
+  if(score >= 0.9){
+    say "We heard: {{heard}}.
+        \nGreat answer! You could also have said:
+        \n{{sampleAnswear}}"
+
+    goto step question_conclusion
+  } 
+  else if (score >= 0.6 && score < 0.9){
+    goto step repeat_question_optional
+  } 
+  else {
+    goto step must_repeat_question
+  }
+
+repeat_question_optional:
+
+  do options = [
+    {"name": "done","step_name":"start","flow_name":"question_conclusion"},
+  ]
+
+  say "We heard: {{heard}}.
+    \n🤔 Hmm. You could say:
+    \n{{sample_answer}}"
+
+  say "Would you like to try again? Send another recording, or type **done** to finish."
+
+  hold
+
+  do selection = select(event, options)
+
+  if (selection){
+    do stepname = selection.step
+    do flowname = selection.flow
+    goto $stepname@$flowname
+  } 
+  else if (event.get_type() == "text") {
+    do current_activity.responseAvaliation = SpeakingProcess(event)
+    goto step question_response
+  }
+  else {
+    say "🤔Hmm... Eu não entendi"
+    goto step question_response
+  }
+
+must_repeat_question:
+
+  do useExamples = current_activity.current_question.requiredExpressions.join("")  
+  
+  if(current_activity.current_question.suggestedExpressions){
+    
+    do suggestion = current_activity.current_question.suggestedExpressions.join("\n")
+    
+    say "I couldn't understand you saying {{useExamples}}.
+
+        \nTry again: 
+        \n🔸 Use: {{useExamples}}
+        \n💡 Suggestions: {{suggestion}}"
+  
+  } 
+  else {
+    say "I couldn't understand you saying I prefer.
+
+        \nTry again: 
+        \n🔸 Use: {{useExamples}}"
+  }
+  
+  say Wait(1000)
+
+  goto step question_statement
+
+question_conclusion:
+  do current_question.questionsDone.push(current_activity.current_question)
+  do current_activity.current_question = NULL
+
+  goto step question_start
+
+
+activity_conclusion:
+
+  do options = [
+    {"name": "go","step_name":"start","flow_name":"activityaispeaking"},
+    {"name": "home","step_name":"start","flow_name":"menu"},
+    {"name": "explore","step_name":"start","flow_name":"content_navigation"},
+  ]
+
+  say "\n✨ Activity done!
+      \n📝 **Go** to an activity
+      \n🏠 **Home** menu 
+      \n🔍 **Explore** all content
+      \nType the option to select."
+
+  hold
+
+  do selection = select(event, options)
+
+  if (selection){
+    do stepname = selection.step
+    do flowname = selection.flow
+    goto $stepname@$flowname
+  } 
+  else {
+      say "🤔Hmm... Eu não entendi"
+      goto step activity_conclusion
+  }
+
+fn aispeaking_english(message, variables):
+
+  if (message == "statement"){
+    do current_questionNumber = variables["current_questionNumber"]
+    do totalQuestions = variables["totalQuestions"]
+    do statement = variables["statement"]
+    return { "text": "Tente dizer a(s) frase(s) abaixo o mais claro possível.
+            \n Envie uma mensagem de voz ou digite **cancelar** para sair.
+            \n{{current_questionNumber}}/{{totalQuestions}}: {{statement}}",
+            "options":  [{"name": "cancelar","step_name":"start","flow_name":"menu"}],
+            }
+  }
+  else if (message == "listening"){
+    return {"text": "Estou escutando sua resposta. Só um momento", "options": NULL}
+  }
+  else if (message == "unrecognise"){
+    return {"text": "🤔 Hmm… I didn’t get that.", "options": NULL}
+  }
+  else if (message == "Score A"){
+    do heard = variables["heard"]
+    do sampleAnswear = variables["sampleAnswear"]
+
+    return {"text": "We heard: {{heard}}.
+            \nGreat answer! You could also have said:
+            \n{{sampleAnswear}}",
+            "options": NULL}
+  }
+  else if (message == "Score B"){
+    do heard = variables["heard"]
+    do sampleAnswear = variables["sampleAnswear"]
+    do missingWords = variables["missingWords"].join(", ")
+    return {"text": "Legal, você acertou {{}}% das palavras! Eu não consegui entender: **{{missingWords}}**.
+            \n Você quer tentar novamente? Mande outra gravação, ou digite **pronto** para finalizar.
+
+            \n😀 Aqui está uma ajudinha:",
+            "options": [{"name": "pronto","step_name":"question_conclusion","flow_name":"activity_pronunciation"},],}
+  }
+  else if (message == "Score B limit attempts"){
+    do heard = variables["heard"]
+    do sampleAnswear = variables["sampleAnswear"]
+    return {"text": "Legal, você acertou {{}} das palavras! Eu não consegui entender: {{}}
+            \nVamos para a próxima questão 😁",
+            "options": NULL,} 
+  }
+  else if (message == "Try again"){
+    return {"text":"Gostaria de tentar novamente? Envie outro audio, ou digite **pronto** para terminar.",
+            "options": [{"name": "pronto","step_name":"question_conclusion","flow_name":"activity_pronunciation"},]}
+  }
+  else if (message == "just question"){
+    do current_questionNumber = variables["current_questionNumber"]
+    do totalQuestions = variables["totalQuestions"]
+    do statement = variables["statement"]
+    return {"text":"{{current_questionNumber}}/{{totalQuestions}}: {{statement}}",
+            "options": NULL}
+  }
+  else if (message == "Missing words w/suggestion"){
+    do useExamples = variables["useExamples"]
+    do suggestion = variables["suggestion"]
+
+    return {"text":"I couldn't understand you saying {{useExamples}}.
+            \nTry again: 
+            \n🔸 Use: {{useExamples}}
+            \n💡 Suggestions: {{suggestion}}",
+            "options": NULL}
+  }
+  else if (message == "correct"){
+    do attempts = variables["attempts"]
+    return {
+      "text": "✅  Correto! Você acertou em {{attempts}} tentativas!",
+      "options": NULL,
+    }
+  }
+  else if (message == "correct"){
+    do attempts = variables["attempts"]
+    return {
+      "text": "✅  Correto! Você acertou na primeira tentativa!",
+      "options": NULL,
+    }
+  }
+  else if (message == "Missing words limit attempts"){
+    return {"text":"Não consegui entender você dizendo: {{useExamples}}.
+            \nVamos para a próxima questão",
+            "options": NULL}
+  }
+  else if (message == "Missing words"){
+    do useExamples = variables["useExamples"]
+
+    return {"text":"I couldn't understand you saying: {{useExamples}}.
+            \nTry again: 
+            \n🔸 Use: {{useExamples}}",
+            "options": NULL}
+  }
+  else if (message == "Activity conclusion"){
+    return {"text":"\n✨ Activity done!
+            \n📝 **Go** to an activity
+            \n🏠 **Home** menu 
+            \n🔍 **Explore** all content
+            \nType the option to select.",
+            "options": [{"name": "go","step_name":"start","flow_name":"activity_aispeaking"},
+                        {"name": "home","step_name":"start","flow_name":"menu"},
+                        {"name": "explore","step_name":"start","flow_name":"content_navigation"},]}
+  }
+  else {
+    return false
+  }
