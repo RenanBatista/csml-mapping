@@ -1,6 +1,0 @@
-start:
-    say "Your are in aisemanticmatcher"
-
-    hold
-
-    goto step start
